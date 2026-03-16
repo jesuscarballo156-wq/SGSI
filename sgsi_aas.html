@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SGSI IS — Atlantic Air Solutions</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#ffffff;--bg2:#f5f5f3;--bg3:#eeede9;
+    --text:#1a1a1a;--text2:#666660;--text3:#999993;
+    --border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.2);
+    --radius:8px;--radius-lg:12px;
+    --danger:#A32D2D;--danger-bg:#FCEBEB;
+    --warn:#854F0B;--warn-bg:#FAEEDA;
+    --ok:#3B6D11;--ok-bg:#EAF3DE;
+    --info:#185FA5;--info-bg:#E6F1FB;
+  }
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+  
+  /* HEADER */
+  .header{background:#fff;border-bottom:0.5px solid var(--border);padding:0 1.5rem;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;height:52px}
+  .logo{width:32px;height:32px;border-radius:var(--radius);background:var(--info-bg);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--info);flex-shrink:0}
+  .header-title{font-size:14px;font-weight:500;color:var(--text)}
+  .header-sub{font-size:11px;color:var(--text2)}
+  .header-badge{margin-left:auto;background:var(--danger-bg);color:var(--danger);font-size:10px;font-weight:500;padding:3px 8px;border-radius:var(--radius)}
+
+  /* NAV */
+  .nav-wrap{background:#fff;border-bottom:0.5px solid var(--border);padding:0 1.5rem;display:flex;gap:2px;overflow-x:auto}
+  .nav-btn{padding:10px 14px;border:none;background:transparent;color:var(--text2);font-size:12px;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:inherit}
+  .nav-btn:hover{color:var(--text)}
+  .nav-btn.active{color:var(--info);border-bottom-color:var(--info);font-weight:500}
+
+  /* LAYOUT */
+  .main{max-width:1100px;margin:0 auto;padding:1.5rem}
+  .section{display:none}.section.active{display:block}
+
+  /* METRIC GRID */
+  .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:1.2rem}
+  .metric{background:var(--bg2);border-radius:var(--radius);padding:12px}
+  .metric-label{font-size:11px;color:var(--text2);margin-bottom:4px}
+  .metric-val{font-size:22px;font-weight:500;color:var(--text)}
+  .metric-val.danger{color:var(--danger)}.metric-val.warn{color:var(--warn)}.metric-val.ok{color:var(--ok)}.metric-val.info{color:var(--info)}
+
+  /* CARDS */
+  .card{background:#fff;border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.2rem;margin-bottom:1rem}
+  .card-title{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:12px;text-transform:uppercase;letter-spacing:.04em}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+
+  /* BADGES */
+  .badge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:var(--radius);font-weight:500;white-space:nowrap}
+  .badge-intol{background:var(--danger-bg);color:var(--danger)}
+  .badge-tol{background:var(--warn-bg);color:var(--warn)}
+  .badge-acep{background:var(--ok-bg);color:var(--ok)}
+  .badge-urg{background:var(--danger-bg);color:var(--danger)}
+  .badge-alta{background:var(--warn-bg);color:var(--warn)}
+  .badge-med{background:var(--info-bg);color:var(--info)}
+  .badge-baja{background:var(--ok-bg);color:var(--ok)}
+  .badge-pend{background:var(--warn-bg);color:var(--warn)}
+  .badge-A{background:#FCEBEB;color:#791F1F}
+  .badge-B{background:var(--warn-bg);color:var(--warn)}
+  .badge-C{background:var(--info-bg);color:var(--info)}
+  .badge-D{background:var(--ok-bg);color:var(--ok)}
+
+  /* ROWS */
+  .row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--border);font-size:12px}
+  .row:last-child{border-bottom:none}
+  .row-title{flex:1;color:var(--text)}
+  .bar-wrap{height:5px;background:var(--bg2);border-radius:3px;overflow:hidden;width:80px;flex-shrink:0}
+  .bar-fill{height:100%;border-radius:3px}
+
+  /* TABS */
+  .tabs{display:flex;gap:5px;margin-bottom:1rem;flex-wrap:wrap}
+  .tab{padding:5px 12px;font-size:11px;border-radius:var(--radius);border:0.5px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:inherit}
+  .tab:hover{background:var(--bg2)}
+  .tab.active{background:var(--bg2);color:var(--text);border-color:var(--border2);font-weight:500}
+
+  /* THREAT ROWS */
+  .threat-row{padding:10px 0;border-bottom:0.5px solid var(--border)}
+  .threat-row:last-child{border-bottom:none}
+  .threat-header{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+  .threat-id{font-size:11px;font-weight:600;color:var(--text2);min-width:38px}
+  .threat-title{font-size:12px;font-weight:500;color:var(--text);flex:1}
+  .threat-detail{font-size:11px;color:var(--text3);margin-left:44px;line-height:1.5}
+
+  /* ASSETS */
+  .asset-row{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--border)}
+  .asset-row:last-child{border-bottom:none}
+  .asset-id{font-size:10px;font-weight:600;color:var(--text2);min-width:52px;padding-top:2px}
+  .asset-name{flex:1}
+  .asset-nombre{font-size:12px;color:var(--text);margin-bottom:2px}
+  .asset-nota{font-size:11px;color:var(--text3)}
+  .asset-nota.warn-note{color:var(--danger)}
+
+  /* PLAN TRATAMIENTO */
+  .pt-row{display:flex;align-items:flex-start;gap:8px;padding:10px 0;border-bottom:0.5px solid var(--border)}
+  .pt-row:last-child{border-bottom:none}
+  .pt-ref{font-size:11px;font-weight:600;color:var(--text2);min-width:42px;padding-top:2px}
+  .pt-body{flex:1}
+  .pt-amenaza{font-size:12px;font-weight:500;color:var(--text);margin-bottom:2px}
+  .pt-accion{font-size:11px;color:var(--text2);margin-bottom:2px}
+  .pt-meta{font-size:11px;color:var(--text3)}
+
+  /* PENTEST */
+  .pentest-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.2rem}
+  .vcard{border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:12px;cursor:pointer;background:#fff;transition:border-color .15s,background .15s}
+  .vcard:hover{background:var(--bg2);border-color:var(--border2)}
+  .vcard.sel{border:1.5px solid var(--info);background:var(--info-bg)}
+  .vcard-icon{font-size:20px;margin-bottom:6px}
+  .vcard-name{font-size:12px;font-weight:500;color:var(--text);margin-bottom:3px}
+  .vcard-desc{font-size:11px;color:var(--text2)}
+
+  /* STEPS */
+  .step-list{list-style:none;margin-top:10px}
+  .step-item{display:flex;gap:8px;padding:8px 0;border-bottom:0.5px solid var(--border);font-size:12px;align-items:flex-start}
+  .step-item:last-child{border-bottom:none}
+  .step-num{width:20px;height:20px;border-radius:50%;background:var(--bg2);color:var(--text2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;margin-top:1px}
+  .step-body{flex:1}
+  .step-title{font-weight:500;color:var(--text);margin-bottom:2px}
+  .step-desc{color:var(--text2);line-height:1.5}
+
+  /* SIM */
+  .sim-panel{background:var(--bg2);border-radius:var(--radius-lg);padding:1rem;margin-top:1rem}
+  .sim-out{font-family:'SFMono-Regular',Consolas,monospace;font-size:11px;background:#fff;border:0.5px solid var(--border2);border-radius:var(--radius);padding:10px;margin-top:8px;min-height:120px;line-height:1.9;color:var(--text);white-space:pre-wrap}
+  .s-ok{color:var(--ok)}.s-warn{color:var(--warn)}.s-danger{color:var(--danger)}.s-info{color:var(--info)}
+  .run-btn{margin-top:8px;padding:7px 16px;background:#fff;border:0.5px solid var(--border2);border-radius:var(--radius);color:var(--text);font-size:12px;cursor:pointer;font-family:inherit}
+  .run-btn:hover{background:var(--bg2)}
+  .ia-btn{margin-top:10px;display:inline-block;padding:8px 16px;background:var(--info-bg);border:0.5px solid var(--info);border-radius:var(--radius);color:var(--info);font-size:12px;cursor:pointer;text-decoration:none;font-family:inherit}
+
+  /* CHECKLIST */
+  .chk-section{margin-bottom:1rem}
+  .chk-title{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+  .chk-item{display:flex;align-items:flex-start;gap:7px;padding:5px 0;font-size:12px;color:var(--text);cursor:pointer;border-bottom:0.5px solid var(--border)}
+  .chk-item:last-child{border-bottom:none}
+  .chk-item input{margin-top:2px;flex-shrink:0;cursor:pointer;accent-color:var(--info)}
+  .chk-item.checked span{color:var(--text3);text-decoration:line-through}
+
+  /* ALERT BOX */
+  .alert{padding:10px 12px;border-radius:var(--radius);font-size:12px;margin-bottom:1rem;display:flex;gap:8px;align-items:flex-start}
+  .alert-danger{background:var(--danger-bg);color:var(--danger);border:0.5px solid #F7C1C1}
+  .alert-warn{background:var(--warn-bg);color:var(--warn);border:0.5px solid #FAC775}
+  .alert-icon{flex-shrink:0;font-weight:700}
+
+  /* FOOTER */
+  .footer{text-align:center;padding:2rem 0;font-size:11px;color:var(--text3);border-top:0.5px solid var(--border);margin-top:2rem}
+
+  @media(max-width:680px){
+    .two-col{grid-template-columns:1fr}
+    .pentest-grid{grid-template-columns:1fr 1fr}
+    .metric-grid{grid-template-columns:repeat(2,1fr)}
+  }
+  @media(max-width:400px){
+    .pentest-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">AAS</div>
+  <div>
+    <div class="header-title">SGSI IS — Atlantic Air Solutions</div>
+    <div class="header-sub">PART-IS IS.I.OR.205 · Reglamento (UE) 2023/203 · D-IRSB &amp; D-IHVQ</div>
+  </div>
+  <div class="header-badge">2 INTOLERABLES</div>
+</div>
+
+<!-- NAV -->
+<div class="nav-wrap">
+  <button class="nav-btn active" onclick="showSection('dashboard')">Panel SGSI</button>
+  <button class="nav-btn" onclick="showSection('amenazas')">Amenazas IS (15)</button>
+  <button class="nav-btn" onclick="showSection('activos')">Inventario activos</button>
+  <button class="nav-btn" onclick="showSection('tratamiento')">Plan de tratamiento</button>
+  <button class="nav-btn" onclick="showSection('pentest')">Simulador pentests</button>
+</div>
+
+<div class="main">
+
+<!-- ===== DASHBOARD ===== -->
+<div id="dashboard" class="section active">
+  <div class="alert alert-danger">
+    <span class="alert-icon">⚠</span>
+    <div>2 amenazas INTOLERABLES activas: <strong>T-01 NavDB/AIRAC</strong> y <strong>T-11 GPS Spoofing Europa</strong> · Tratamiento obligatorio ≤ 30 días · Evaluar notificación AESA IS.I.OR.230</div>
+  </div>
+
+  <div class="metric-grid">
+    <div class="metric"><div class="metric-label">Amenazas totales</div><div class="metric-val">15</div></div>
+    <div class="metric"><div class="metric-label">INTOLERABLES</div><div class="metric-val danger">2</div></div>
+    <div class="metric"><div class="metric-label">TOLERABLES</div><div class="metric-val warn">11</div></div>
+    <div class="metric"><div class="metric-label">ACEPTABLES</div><div class="metric-val ok">2</div></div>
+    <div class="metric"><div class="metric-label">Acciones URGENTE</div><div class="metric-val danger">5</div></div>
+    <div class="metric"><div class="metric-label">Activos inventariados</div><div class="metric-val info">19</div></div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Amenazas INTOLERABLES</div>
+      <div class="row"><span class="badge badge-intol">T-01</span><span class="row-title">Manipulación NavDB/AIRAC — EFBs CJ1</span><span class="badge badge-A">Sev A</span><span style="font-size:11px;color:var(--text3)">3A</span></div>
+      <div class="row"><span class="badge badge-intol">T-11</span><span class="row-title">GPS Spoofing activo Europa — D-IRSB/D-IHVQ</span><span class="badge badge-A">Sev A</span><span style="font-size:11px;color:var(--text3)">3A</span></div>
+      <div style="margin-top:10px;padding:8px;background:var(--bg2);border-radius:var(--radius);font-size:11px;color:var(--text2)">Índice OACI 3A · Tratamiento ≤ 30 días · EASA SIB vigente (GNSS spoofing)</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Estado por dominio de riesgo</div>
+      <div class="row"><span style="font-size:11px;min-width:130px;color:var(--text)">Vuelo / Operaciones AOC</span><div class="bar-wrap"><div class="bar-fill" style="width:40%;background:var(--danger)"></div></div><span style="font-size:11px;color:var(--danger);min-width:40px;text-align:right">6 am.</span></div>
+      <div class="row"><span style="font-size:11px;min-width:130px;color:var(--text)">CAMO / Aeronavegabilidad</span><div class="bar-wrap"><div class="bar-fill" style="width:27%;background:var(--warn)"></div></div><span style="font-size:11px;color:var(--warn);min-width:40px;text-align:right">4 am.</span></div>
+      <div class="row"><span style="font-size:11px;min-width:130px;color:var(--text)">GNSS / Señal (activo)</span><div class="bar-wrap"><div class="bar-fill" style="width:20%;background:var(--warn)"></div></div><span style="font-size:11px;color:var(--warn);min-width:40px;text-align:right">3 am.</span></div>
+      <div class="row"><span style="font-size:11px;min-width:130px;color:var(--text)">Datos VIP / GDPR</span><div class="bar-wrap"><div class="bar-fill" style="width:13%;background:var(--ok)"></div></div><span style="font-size:11px;color:var(--ok);min-width:40px;text-align:right">2 am.</span></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <div class="card-title">Plazos de tratamiento — todos PENDIENTES</div>
+      <div class="row"><span class="badge badge-urg">≤ 30 días</span><span class="row-title">PT-01 NavDB · PT-03 W&B · PT-05 M365 · PT-11 GPS Spoof</span></div>
+      <div class="row"><span class="badge badge-alta">≤ 45 días</span><span class="row-title">PT-06 EFB MDM · PT-07 AWM CRS · PT-08 MRO · PT-09 SBs/ADs</span></div>
+      <div class="row"><span class="badge badge-med">≤ 60 días</span><span class="row-title">PT-02 Ransomware PPS · PT-04 Phishing · PT-10 OEM</span></div>
+      <div class="row"><span class="badge badge-baja">≤ 90 días</span><span class="row-title">PT-14 VIP Data · PT-15 ProAir IS</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Limitaciones RSI identificadas</div>
+      <div class="row" style="align-items:flex-start"><span style="color:var(--danger);flex-shrink:0;font-size:13px">●</span><span class="row-title">MDM <strong>no desplegado</strong> en iPads EFB D-IRSB y D-IHVQ</span></div>
+      <div class="row" style="align-items:flex-start"><span style="color:var(--danger);flex-shrink:0;font-size:13px">●</span><span class="row-title">M365 <strong>aún no contratado</strong> — controles IS antes del despliegue</span></div>
+      <div class="row" style="align-items:flex-start"><span style="color:var(--warn);flex-shrink:0;font-size:13px">●</span><span class="row-title">AWM CAMO <strong>pendiente confirmar</strong> — AMOS / CAMP / OASES</span></div>
+      <div class="row" style="align-items:flex-start"><span style="color:var(--warn);flex-shrink:0;font-size:13px">●</span><span class="row-title">DPA GDPR con Leon <strong>pendiente</strong> de firma formal</span></div>
+      <div class="row" style="align-items:flex-start"><span style="color:var(--warn);flex-shrink:0;font-size:13px">●</span><span class="row-title">Proc. notificación AESA IS.I.OR.230 <strong>sin documentar</strong></span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Tendencia riesgo residual — flota CJ1</div>
+    <div style="position:relative;height:200px"><canvas id="dashChart"></canvas></div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:11px;color:var(--text2)">
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#A32D2D;display:inline-block"></span>Sev. A — Catastrófico</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#854F0B;display:inline-block"></span>Sev. B — Peligroso</span>
+      <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:2px;background:#185FA5;display:inline-block"></span>Sev. C — Mayor</span>
+    </div>
+  </div>
+</div>
+
+<!-- ===== AMENAZAS ===== -->
+<div id="amenazas" class="section">
+  <div class="tabs">
+    <button class="tab active" onclick="filterThreats('all',this)">Todas (15)</button>
+    <button class="tab" onclick="filterThreats('INTOLERABLE',this)">Intolerable (2)</button>
+    <button class="tab" onclick="filterThreats('TOLERABLE',this)">Tolerable (11)</button>
+    <button class="tab" onclick="filterThreats('ACEPTABLE',this)">Aceptable (2)</button>
+  </div>
+  <div class="card"><div id="threats-list"></div></div>
+</div>
+
+<!-- ===== ACTIVOS ===== -->
+<div id="activos" class="section">
+  <div class="metric-grid">
+    <div class="metric"><div class="metric-label">Aeronaves flota</div><div class="metric-val">2</div></div>
+    <div class="metric"><div class="metric-label">Software operacional</div><div class="metric-val info">5</div></div>
+    <div class="metric"><div class="metric-label">Hardware / Endpoints</div><div class="metric-val">5</div></div>
+    <div class="metric"><div class="metric-label">Interfaces externas</div><div class="metric-val warn">4</div></div>
+    <div class="metric"><div class="metric-label">Sistemas aeronave</div><div class="metric-val danger">2</div></div>
+    <div class="metric"><div class="metric-label">Criticidad A (catastrófico)</div><div class="metric-val danger">8</div></div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="filterAssets('all',this)">Todos</button>
+    <button class="tab" onclick="filterAssets('Aeronave',this)">Aeronaves</button>
+    <button class="tab" onclick="filterAssets('sw',this)">Software</button>
+    <button class="tab" onclick="filterAssets('hw',this)">Hardware</button>
+    <button class="tab" onclick="filterAssets('ext',this)">Interfaces ext.</button>
+    <button class="tab" onclick="filterAssets('sys',this)">Sist. aeronave</button>
+  </div>
+  <div class="card"><div id="assets-list"></div></div>
+</div>
+
+<!-- ===== PLAN TRATAMIENTO ===== -->
+<div id="tratamiento" class="section">
+  <div class="alert alert-warn">
+    <span class="alert-icon">!</span>
+    <div>15 acciones activas — todas con estado <strong>PENDIENTE</strong> · IS.I.OR.205(c)(d) · Rev.0 · [AAS]-IS-RA-001</div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="filterPT('all',this)">Todas</button>
+    <button class="tab" onclick="filterPT('URGENTE',this)">Urgente (5)</button>
+    <button class="tab" onclick="filterPT('ALTA',this)">Alta (6)</button>
+    <button class="tab" onclick="filterPT('MEDIA',this)">Media (2)</button>
+    <button class="tab" onclick="filterPT('BAJA',this)">Baja (1)</button>
+  </div>
+  <div class="card"><div id="pt-list"></div></div>
+</div>
+
+<!-- ===== PENTEST ===== -->
+<div id="pentest" class="section">
+  <div style="font-size:12px;color:var(--text2);margin-bottom:1rem">Vectores basados en amenazas reales del Risk Assessment AAS (IS.I.OR.205) — entorno simulado</div>
+  <div class="pentest-grid" id="vector-grid"></div>
+  <div id="pentest-content" style="display:none">
+    <div class="tabs" id="pentest-tabs">
+      <button class="tab active" onclick="showPT('esc',this)">Escenario guiado</button>
+      <button class="tab" onclick="showPT('libre',this)">Simulación libre</button>
+      <button class="tab" onclick="showPT('chk',this)">Checklist PTES</button>
+    </div>
+    <div id="esc-tab"><div class="card" id="scenario-box"></div></div>
+    <div id="libre-tab" style="display:none">
+      <div class="sim-panel">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:6px">Terminal de simulación — entorno AAS</div>
+        <select id="sim-sel" style="width:100%;font-size:12px;padding:7px 8px;border:0.5px solid var(--border2);border-radius:var(--radius);background:#fff;color:var(--text);font-family:inherit">
+          <option>Reconocimiento OSINT — AAS / ProAir</option>
+          <option>Escaneo red OCC A Coruña</option>
+          <option>Password spray — Leon / PPS</option>
+          <option>Explotación EFB sin MDM</option>
+          <option>Simular GPS Spoofing — zona báltica</option>
+          <option>Test acceso AWM — usuario MRO</option>
+          <option>Exfiltración datos pasajeros VIP Leon</option>
+        </select>
+        <button class="run-btn" onclick="runSim()">▶ Ejecutar simulación</button>
+        <div class="sim-out" id="sim-out">Selecciona un escenario y ejecuta...</div>
+      </div>
+    </div>
+    <div id="chk-tab" style="display:none">
+      <div class="card"><div id="chk-content"></div></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<div class="footer">
+  SGSI IS · Atlantic Air Solutions, S.L. · NIF B70295951 · C/ Cantón Grande 5, 3ºE — 15003 A Coruña<br>
+  PART-IS IS.I.OR.205 · Reglamento (UE) 2023/203 · [AAS]-IS-RA-001 v1.0 · Clasificación: CONFIDENCIAL — USO INTERNO
+</div>
+
+<script>
+const threats=[
+  {id:'T-01',title:'Manipulación / corrupción NavDB (AIRAC) — EFBs D-IRSB y D-IHVQ',activos:'SW-01 PPS · SW-05 NavDB · HW-01a/b',tipo:'Supply chain / Integridad',sev:'A',inh:'3A',region:'INTOLERABLE',res:'2A',resR:'TOLERABLE',plazo:'≤ 30 días',ref:'PT-01'},
+  {id:'T-02',title:'Ransomware / DoS sobre PPS OCC — paralización despacho AAS',activos:'SW-01 PPS · HW-04 PCs OCC',tipo:'Malware / Ransomware',sev:'C',inh:'4C',region:'TOLERABLE',res:'3C',resR:'TOLERABLE',plazo:'≤ 60 días',ref:'PT-02'},
+  {id:'T-03',title:'Compromiso datos W&B / Performance CJ1 en PPS o EFB',activos:'SW-01 PPS · HW-01a/b EFB',tipo:'Integridad datos',sev:'A',inh:'2A',region:'TOLERABLE',res:'2A',resR:'TOLERABLE',plazo:'≤ 30 días',ref:'PT-03'},
+  {id:'T-04',title:'Spear phishing tripulación / OCC / CAMO — acceso Leon o PPS',activos:'SW-02 Leon · HW-02 · HW-03',tipo:'Ingeniería social / Phishing',sev:'C',inh:'4C',region:'TOLERABLE',res:'3C',resR:'TOLERABLE',plazo:'≤ 60 días',ref:'PT-04'},
+  {id:'T-05',title:'BEC / Compromiso M365 — tenant AAS (previo a despliegue)',activos:'SW-03 M365 · HW-04',tipo:'Acceso no autorizado / BEC',sev:'C',inh:'4C',region:'TOLERABLE',res:'3C',resR:'TOLERABLE',plazo:'Pre-despliegue',ref:'PT-05'},
+  {id:'T-06',title:'EFBs aeronave sin MDM / AIRAC caducado — D-IRSB o D-IHVQ',activos:'HW-01a/b EFB · SW-05 NavDB',tipo:'Gestión dispositivos / Integridad',sev:'C',inh:'3C',region:'TOLERABLE',res:'2C',resR:'ACEPTABLE',plazo:'≤ 45 días',ref:'PT-06'},
+  {id:'T-07',title:'Alteración Tech Log / CRS en AWM — aeronave con defecto no registrada',activos:'SW-04 AWM',tipo:'Integridad / Insider',sev:'A',inh:'2A',region:'TOLERABLE',res:'2A',resR:'TOLERABLE',plazo:'≤ 45 días',ref:'PT-07'},
+  {id:'T-08',title:'Acceso no autorizado AWM por MRO externo — modificación registros CAMO',activos:'SW-04 AWM · IF-03 MRO',tipo:'Control accesos / Supply chain',sev:'B',inh:'3B',region:'TOLERABLE',res:'2B',resR:'TOLERABLE',plazo:'≤ 45 días',ref:'PT-08'},
+  {id:'T-09',title:'Inyección SBs/ADs falsificados en AWM — flota CJ1',activos:'SW-04 AWM · IF-03 Textron',tipo:'Integridad / Supply chain',sev:'A',inh:'2A',region:'TOLERABLE',res:'2A',resR:'TOLERABLE',plazo:'≤ 45 días',ref:'PT-09'},
+  {id:'T-10',title:'Acceso remoto OEM Textron comprometido — modificación aviónica CJ1',activos:'SW-04 AWM · IT · IF-03',tipo:'Acceso remoto / Third party',sev:'B',inh:'2B',region:'TOLERABLE',res:'2B',resR:'TOLERABLE',plazo:'≤ 60 días',ref:'PT-10'},
+  {id:'T-11',title:'GPS/GNSS Spoofing — posición falsa FMS D-IRSB o D-IHVQ (activo Europa)',activos:'SYS-01 GNSS · HW-01a/b EFB',tipo:'Interferencia señal / Amenaza activa',sev:'A',inh:'3A',region:'INTOLERABLE',res:'2A',resR:'TOLERABLE',plazo:'≤ 30 días',ref:'PT-11'},
+  {id:'T-12',title:'GPS/GNSS Jamming — pérdida precisión RNAV/RNP en vuelo CJ1',activos:'SYS-01 GNSS · SYS-02 ADS-B',tipo:'Interferencia señal / Amenaza activa',sev:'C',inh:'4C',region:'TOLERABLE',res:'3C',resR:'TOLERABLE',plazo:'Continuo',ref:'PT-12'},
+  {id:'T-13',title:'ADS-B Spoofing — tráfico fantasma TCAS/EFB D-IRSB y D-IHVQ',activos:'SYS-02 ADS-B · IF-01 ENAIRE',tipo:'Interferencia señal / Emergente',sev:'B',inh:'2B',region:'TOLERABLE',res:'2B',resR:'TOLERABLE',plazo:'Continuo',ref:'PT-13'},
+  {id:'T-14',title:'VIP Data Breach — exfiltración itinerarios e identidades vía Leon',activos:'SW-02 Leon · HW-03 Móviles',tipo:'Exfiltración datos / GDPR',sev:'D',inh:'5D',region:'TOLERABLE',res:'4D',resR:'TOLERABLE',plazo:'≤ 90 días',ref:'PT-14'},
+  {id:'T-15',title:'Compromiso interfaz ProAir Aviation — datos D-IRSB/D-IHVQ expuestos',activos:'SW-02 Leon · IF-04 ProAir',tipo:'Control accesos / Third party',sev:'C',inh:'2C',region:'ACEPTABLE',res:'2C',resR:'ACEPTABLE',plazo:'≤ 90 días',ref:'PT-15'},
+];
+
+const assets=[
+  {id:'AC-01',nombre:'D-IRSB — Cessna 525 CJ1 (C/N 525-0476)',cat:'Aeronave',tipo:'Aeronave',sev:'A',nota:'Base LECO A Coruña. Matrícula LBA (D-). Op. vía ProAir Aviation GmbH.',warn:false},
+  {id:'AC-02',nombre:'D-IHVQ — Cessna 525 CJ1 (C/N 525-0436)',cat:'Aeronave',tipo:'Aeronave',sev:'A',nota:'Base LECO. Mode S 3E4719. Fotografiada may-2025. Op. vía ProAir.',warn:false},
+  {id:'SW-01',nombre:'PPS Flight Planning — AIR SUPPORT A/S (SaaS)',cat:'Software vuelo',tipo:'sw',sev:'A',nota:'OFP, W&B, FPL ICAO, NOTAM/MET. App CrewBriefing pilotos. PPS8/X rolling.',warn:false},
+  {id:'SW-02',nombre:'Leon Software — Crew/Ops management (SaaS)',cat:'Software operacional',tipo:'sw',sev:'B',nota:'ISO 27001/27018 León. DPA GDPR pendiente firma formal. Datos VIP sensibles.',warn:true},
+  {id:'SW-03',nombre:'Microsoft 365 — PENDIENTE CONTRATACIÓN',cat:'Suite ofimática',tipo:'sw',sev:'C',nota:'⚠ Aún no contratado. Definir MFA + Conditional Access + DLP antes del despliegue.',warn:true},
+  {id:'SW-04',nombre:'AWM / CAME System — PENDIENTE CONFIRMAR',cat:'CAMO software',tipo:'sw',sev:'A',nota:'⚠ Confirmar sistema: AMOS / CAMP / OASES. Audit trail inmutable requerido.',warn:true},
+  {id:'SW-05',nombre:'Jeppesen NavDB / LIDO — Ciclos AIRAC 28 días',cat:'Base de datos nav.',tipo:'sw',sev:'A',nota:'Verificación hash pre-activación. Doble validación OCC obligatoria.',warn:false},
+  {id:'HW-01a',nombre:'iPads EFB x2 — aeronave D-IRSB',cat:'EFB aeronave',tipo:'hw',sev:'A',nota:'⚠ MDM NO desplegado. Inventario físico (Nº serie) pendiente. App Store libre.',warn:true},
+  {id:'HW-01b',nombre:'iPads EFB x2 — aeronave D-IHVQ',cat:'EFB aeronave',tipo:'hw',sev:'A',nota:'⚠ MDM NO desplegado. Mismas limitaciones que HW-01a.',warn:true},
+  {id:'HW-02',nombre:'iPads pilotos corporativos — pendiente despliegue',cat:'iPad pilotos',tipo:'hw',sev:'C',nota:'MDM obligatorio antes de entrega. Confirmar plantilla pilotos AAS.',warn:true},
+  {id:'HW-03',nombre:'Móviles personal AAS — BYOD / corporativo',cat:'Móviles',tipo:'hw',sev:'C',nota:'Política BYOD a definir. Mayor superficie de ataque (phishing SMS/email).',warn:false},
+  {id:'HW-04',nombre:'PCs corporativos — OCC y oficinas AAS',cat:'PCs oficina',tipo:'hw',sev:'B',nota:'Windows 10/11. EDR pendiente. Sin VLAN OCC confirmada. BitLocker recomendado.',warn:false},
+  {id:'IT-01',nombre:'Red corporativa AAS — Router, switches, WiFi OCC',cat:'Red corporativa',tipo:'hw',sev:'B',nota:'Segmentación VLAN operacional vs. admin pendiente. 4G backup recomendado.',warn:false},
+  {id:'IF-01',nombre:'ENAIRE / ATC — FPL CFMU, NOTAMs, ATC VHF',cat:'Interfaz ATC/AIS',tipo:'ext',sev:'A',nota:'Vector GNSS spoofing/jamming activo en Europa. RAIM check pre-vuelo.',warn:true},
+  {id:'IF-02',nombre:'AESA — Notificación IS.I.OR.230, auditorías, AOC',cat:'Interfaz regulatoria',tipo:'ext',sev:'B',nota:'Procedimiento notificación IS.I.OR.230 pendiente de formalizar en MSG.',warn:true},
+  {id:'IF-03',nombre:'Textron OEM + MROs Part-145',cat:'OEM / MRO',tipo:'ext',sev:'B',nota:'PAM sesiones OEM pendiente. Cláusulas IS.I.OR.235 con todos los MROs.',warn:true},
+  {id:'IF-04',nombre:'ProAir Aviation GmbH (Alemania)',cat:'Operador asociado',tipo:'ext',sev:'C',nota:'Acuerdo IS.I.OR.235 con ProAir pendiente. Verificar estado PART-IS EASA.',warn:true},
+  {id:'SYS-01',nombre:'Receptores GNSS — D-IRSB y D-IHVQ (Garmin/Honeywell)',cat:'GNSS aeronave',tipo:'sys',sev:'A',nota:'⚠ AMENAZA ACTIVA: GPS spoofing Europa. EASA SIB vigente. Proc. OM-B urgente.',warn:true},
+  {id:'SYS-02',nombre:'Transponder Mode S + ADS-B Out — D-IRSB / D-IHVQ',cat:'ADS-B aeronave',tipo:'sys',sev:'B',nota:'Mode S D-IRSB: 3E2BF6. ADS-B no autenticado por diseño ICAO. TCAS RA compliance.',warn:false},
+];
+
+const ptData=[
+  {ref:'PT-01',amenaza:'T-01 — NavDB/AIRAC',prio:'URGENTE',plazo:'≤ 30 días',resp:'RSI + RSO / Jefe Operaciones',marco:'IS.I.OR.205 · IS.I.OR.235 · AMC1',accion:'Hash SHA-256 cada ciclo AIRAC · canal HTTPS dedicado Jeppesen · doble validación (despachador + supervisor) pre-activación EFBs CJ1 · suscripción alertas seguridad Jeppesen · cláusula IS.I.OR.235 en contrato'},
+  {ref:'PT-02',amenaza:'T-02 — Ransomware PPS',prio:'ALTA',plazo:'≤ 60 días',resp:'RSI + IT + RSO',marco:'IS.I.OR.205 · NIST CSF',accion:'Backup offsite automático PPS (RTO ≤ 4h) · VLAN separada PCs OCC vs. red general · EDR en todos los PCs OCC · ejercicio DR anual · proc. contingencia OFP manual / EFB en OM-B'},
+  {ref:'PT-03',amenaza:'T-03 — W&B CJ1',prio:'URGENTE',plazo:'≤ 30 días',resp:'RSI + RSO / Chief Dispatcher',marco:'IS.I.OR.205 · ORO.FC.105',accion:'MFA acceso módulo W&B PPS · audit log inmutable modificaciones W&B · verificación cruzada 4 ojos antes de firma para D-IRSB y D-IHVQ · integrar en checklist pre-despacho OCC'},
+  {ref:'PT-04',amenaza:'T-04 — Phishing',prio:'ALTA',plazo:'≤ 60 días',resp:'RSI + Chief Pilot + RRHH',marco:'IS.I.OR.205 · AMC1 IS.I.OR.220',accion:'Campaña concienciación IS 2x/año (tracking vía Leon) · simulacros phishing trimestrales · MFA Leon y PPS · proc. reporte emails sospechosos documentado en MSG Cap.3.5'},
+  {ref:'PT-05',amenaza:'T-05 — M365 BEC',prio:'URGENTE',plazo:'Previo a despliegue',resp:'RSI + IT',marco:'IS.I.OR.205 · MS Security Baseline',accion:'MFA obligatorio día 1 (Microsoft Authenticator) · Conditional Access (bloquear países no operacionales) · Defender for Office 365 P1 · DLP básico datos pasajeros VIP · Unified Audit Log M365'},
+  {ref:'PT-06',amenaza:'T-06 — EFB sin MDM',prio:'ALTA',plazo:'≤ 45 días',resp:'RSI + OCC + Safety',marco:'IS.I.OR.205 · GM1 IS.I.OR.205(a) · EASA EFB',accion:'Apple Business Manager + Intune o Jamf todos los iPads EFB D-IRSB/D-IHVQ · cifrado + PIN/Face ID + remote wipe + sin App Store libre · inventario Nº serie EFBs · política EFB aprobada Accountable Manager'},
+  {ref:'PT-07',amenaza:'T-07 — AWM Tech Log',prio:'URGENTE',plazo:'≤ 45 días',resp:'RSI + CAMO Manager + RSA',marco:'IS.I.OR.205 · CAMO.A.310 · Part-M',accion:'Firma electrónica o hash timestamp CRS y Tech Logs D-IRSB/D-IHVQ · audit trail inmutable AWM · segregación CAMO: quien registra ≠ quien emite CRS · backup diario AWM · revisión logs semanal RSA'},
+  {ref:'PT-08',amenaza:'T-08 — Insider MRO',prio:'ALTA',plazo:'≤ 45 días',resp:'RSI + CAMO Manager',marco:'IS.I.OR.205 · IS.I.OR.235',accion:'PAM sesiones MRO supervisadas con registro · revisión trimestral accesos MRO activos · alertas modificaciones fuera horario · mínimo privilegio (solo aeronave en mantenimiento activo) · IS.I.OR.235 en contratos'},
+  {ref:'PT-09',amenaza:'T-09 — SBs/ADs AWM',prio:'ALTA',plazo:'≤ 45 días',resp:'RSI + CAMO Manager',marco:'IS.I.OR.205 · CAMO.A.305',accion:'Procedimiento formal verificación SB/AD vs. EASA-SRIS + Textron antes de AWM · importación restringida a roles CAMO con MFA · notificación CAMO Manager ante nuevo SB/AD · registro origen cada SB/AD'},
+  {ref:'PT-10',amenaza:'T-10 — Acceso OEM Textron',prio:'ALTA',plazo:'≤ 60 días',resp:'RSI + CAMO Manager',marco:'IS.I.OR.205 · IS.I.OR.235',accion:'Sesiones Textron supervisadas (CAMO presente siempre) · registro formal: fecha/hora/técnico/trabajo · credenciales rotadas post-sesión · IS.I.OR.235 con Textron · desactivar acceso cuando no esté en uso'},
+  {ref:'PT-11',amenaza:'T-11 — GPS Spoofing',prio:'URGENTE',plazo:'≤ 30 días',resp:'RSI + Chief Pilot + Safety',marco:'IS.I.OR.205 · EASA SIB · OACI Doc 9849',accion:'Proc. detección/respuesta GPS spoofing en OM-B (indicadores + acciones + comunicación ATC) · cross-check IRS/DME-DME/VOR obligatorio · módulo spoofing/jamming en recurrent training CJ1 · NOTAMs GNSS en checklist pre-vuelo'},
+  {ref:'PT-12',amenaza:'T-12 — GPS Jamming',prio:'MEDIA',plazo:'Continuo',resp:'RSI + Chief Pilot + CAMO',marco:'IS.I.OR.205 · EASA SIB · ORO.FC',accion:'Proc. degradación GNSS en OM-B: transición VOR/DME · validar MEL CJ1 capacidades sin GPS · NOTAMs militares en rutas Báltico / Mediterráneo oriental · monitorizar EASA SIBs GNSS'},
+  {ref:'PT-13',amenaza:'T-13 — ADS-B Spoofing',prio:'BAJA',plazo:'Continuo',resp:'RSI + Chief Pilot',marco:'IS.I.OR.205 · OACI Doc 9684',accion:'TCAS RA compliance siempre en D-IRSB y D-IHVQ · awareness training ADS-B no autenticado · ATC como cross-check ante tráfico anómalo · monitorizar EASA bulletins ADS-B'},
+  {ref:'PT-14',amenaza:'T-14 — VIP Data Breach',prio:'ALTA',plazo:'≤ 90 días',resp:'RSI + DPO + Dirección',marco:'IS.I.OR.205 · GDPR · LOPDGDD',accion:'DLP Leon: alertas extracción masiva datos VIP · roles mínimo acceso en Leon para itinerarios VIP · verificar cifrado datos pasajeros (en reposo y tránsito) · DPA actualizado con Leon GDPR/LOPDGDD'},
+  {ref:'PT-15',amenaza:'T-15 — ProAir interfaz',prio:'MEDIA',plazo:'≤ 90 días',resp:'RSI + Legal + Dirección',marco:'IS.I.OR.205 · IS.I.OR.235',accion:'Formalizar acuerdo IS.I.OR.235 con ProAir Aviation · verificar estado PART-IS ProAir en EASA · mínimo acceso a datos D-IRSB/D-IHVQ · canal comunicación cifrado para datos operacionales'},
+];
+
+const vectors=[
+  {icon:'📡',nombre:'GPS Spoofing (activo)',desc:'T-11 · D-IRSB/D-IHVQ · zona báltica y ME',th:'T-11'},
+  {icon:'📧',nombre:'Phishing / Spear phishing',desc:'T-04 · tripulación y OCC AAS vía Leon',th:'T-04'},
+  {icon:'🗄️',nombre:'Ransomware PPS/OCC',desc:'T-02 · sistema despacho de vuelo AAS',th:'T-02'},
+  {icon:'📱',nombre:'EFB sin MDM',desc:'T-06 · iPads D-IRSB y D-IHVQ',th:'T-06'},
+  {icon:'🔧',nombre:'Insider MRO / AWM',desc:'T-08 · acceso registro CAMO CJ1',th:'T-08'},
+  {icon:'👤',nombre:'VIP Data Breach',desc:'T-14 · itinerarios pasajeros Leon',th:'T-14'},
+];
+
+const scenarios={
+  'T-11':{title:'GPS Spoofing — flota CJ1 AAS (T-11 · INTOLERABLE)',steps:[
+    {t:'Reconocimiento de rutas activas',d:'Consulta Flightradar24: D-IRSB (Mode S 3E2BF6) y D-IHVQ (3E4719). Identificar rutas frecuentes AAS/ProAir. NOTAMs GNSS activos zona báltica y Mediterráneo oriental.',s:'info'},
+    {t:'Identificación ventana de ataque',d:'Fase en ruta sobre zona de riesgo. RAIM degradado o no activo. Baja cobertura IRS/DME alternativa en CJ1.',s:'warn'},
+    {t:'Inyección señal GPS falsa',d:'Emisor SDR falsifica señal GPS con posición desplazada ≥10 nm. FMS CJ1 acepta posición sin alerta de integridad. RAIM no detecta spoofing diferencial.',s:'danger'},
+    {t:'Evaluación respuesta tripulación',d:'¿Se realiza cross-check IRS/DME-DME? ¿Se comunica con ATC ante discrepancia? Proc. formal en OM-B: PENDIENTE en AAS.',s:'warn'},
+    {t:'Escalada — CFIT escenario peor caso',d:'Sin detección: FMS guía D-IRSB hacia terreno u obstáculo. Aproximación GPS/LPV a aeródromo incorrecto. Violación TMA sin awareness.',s:'danger'},
+    {t:'Estado controles AAS (PT-11)',d:'RAIM check pre-vuelo. Cross-check IRS parcial. NOTAMs GNSS revisados. PENDIENTE: proc. formal OM-B no documentado aún. Plazo: ≤ 30 días.',s:'warn'},
+  ]},
+  'T-04':{title:'Spear phishing tripulación / OCC AAS (T-04)',steps:[
+    {t:'Reconocimiento OSINT AAS',d:'LinkedIn: tripulación CJ1, despachadores OCC, CAMO Manager. Flightradar24: D-IRSB/D-IHVQ operaciones. Email format: nombre.apellido@atlanticairsolutions.com.',s:'info'},
+    {t:'Diseño señuelo adaptado',d:'Email simulando Leon Software: "Actualización urgente FTL checklist". Dominio lookalike: l3on-software.com. Suplanta RSI o Chief Pilot AAS.',s:'warn'},
+    {t:'Captura de credenciales',d:'Landing page replica Leon. Piloto o despachador introduce usuario/contraseña. Credenciales capturadas: acceso Leon + posible PPS (sin MFA).',s:'danger'},
+    {t:'Escalada post-compromiso',d:'Acceso Leon: scheduling D-IRSB/D-IHVQ, FTL data, itinerarios VIP, datos pasajeros. Pivoting a PPS. Vector inicial ransomware OCC.',s:'danger'},
+    {t:'Detección (o no)',d:'AAS actualmente: sin simulacros phishing, sin MFA universal, sin proc. reporte sospechosos documentado. Probabilidad detección: muy baja.',s:'warn'},
+    {t:'Estado controles AAS (PT-04)',d:'Filtro antispam básico. Sin formación IS específica. Sin MFA Leon/PPS. PENDIENTE: campaña concienciación y simulacros trimestrales.',s:'warn'},
+  ]},
+  'T-02':{title:'Ransomware sobre PPS OCC AAS (T-02)',steps:[
+    {t:'Vector de entrada — PC OCC',d:'Email phishing a despachador OCC → descarga payload. PC Windows OCC sin EDR: ejecución silenciosa. Antivirus básico: sin detección comportamental.',s:'info'},
+    {t:'Reconocimiento interno',d:'Sin segmentación VLAN OCC confirmada: acceso a PCs, unidades compartidas y backups. Identificar datos críticos AAS.',s:'warn'},
+    {t:'Cifrado y ransom',d:'Ransomware cifra disco PCs OCC y unidades de red accesibles. PPS SaaS: no afectado directamente, pero credenciales en peligro. Ops paralizadas.',s:'danger'},
+    {t:'Impacto operacional AAS',d:'Sin PPS: imposible generar OFP, W&B, FPL para D-IRSB y D-IHVQ. Sin M365 (no contratado): comunicaciones críticas cortadas.',s:'danger'},
+    {t:'RTO vs. backup existente',d:'AAS actualmente: backup parcial PPS. Sin backup offsite automatizado. Sin EDR. RTO real: desconocido, posiblemente >24h. Objetivo PT-02: ≤ 4h.',s:'warn'},
+    {t:'Estado controles AAS (PT-02)',d:'Antivirus básico. Backup parcial. Sin VLAN OCC. Sin ejercicio DR. PENDIENTE: backup offsite + EDR + VLAN + proc. contingencia OM-B.',s:'warn'},
+  ]},
+  'T-06':{title:'EFB sin MDM — D-IRSB y D-IHVQ (T-06)',steps:[
+    {t:'Estado actual iPads EFB AAS',d:'4 iPads (2 por aeronave). MDM no desplegado. Herramienta sin confirmar. Nº serie no registrados. Política uso personal no definida. App Store libre.',s:'warn'},
+    {t:'Vector — AIRAC caducado',d:'Piloto despega D-IRSB sin verificar actualización AIRAC. Ciclo caducado: cartas, SIDs/STARs incorrectos. Sin MDM que fuerce verificación pre-vuelo.',s:'danger'},
+    {t:'Vector — app maliciosa',d:'Sin MDM: App Store libre activa. Descarga app no autorizada en EFB operacional. Posible exfiltración OFPs o credenciales CrewBriefing.',s:'danger'},
+    {t:'Vector — acceso físico',d:'EFB perdido o robado sin PIN forzado. Acceso a OFPs, cartas Jeppesen, credenciales app. Sin remote wipe disponible.',s:'danger'},
+    {t:'Detección y respuesta',d:'Sin MDM: sin visibilidad del estado de los EFBs. OCC no sabe si AIRAC está actualizado en cada aeronave. Sin alertas de acceso anómalo.',s:'warn'},
+    {t:'Estado controles AAS (PT-06)',d:'Actualización AIRAC manual sin verificación forzada. Sin inventario EFBs formalizado. PENDIENTE: Apple Business Manager + Intune/Jamf ≤ 45 días.',s:'warn'},
+  ]},
+  'T-08':{title:'Acceso MRO no autorizado AWM (T-08)',steps:[
+    {t:'Reconocimiento accesos MRO activos',d:'¿Qué MROs Part-145 tienen acceso a AWM AAS? Sin revisión periódica: posibles accesos de MROs que ya no trabajan con D-IRSB/D-IHVQ.',s:'info'},
+    {t:'Credential stuffing — usuario MRO',d:'Credenciales MRO comprometidas (breach externo). Sin MFA en AWM: acceso directo. Sin PAM: sesión no supervisada ni registrada.',s:'warn'},
+    {t:'Modificación registros técnicos',d:'MRO accede task cards D-IRSB (C/N 525-0476). Modifica estado componente: tarea marcada como completada sin ejecutar. CRS firmado con defecto.',s:'danger'},
+    {t:'Aeronave en servicio con defecto',d:'D-IRSB puesta en servicio con AD no aplicado. Descubierto en próxima inspección CAMO o en vuelo. CAMO.A.310 violation.',s:'danger'},
+    {t:'Detección',d:'Audit trail AWM (si existe y activo). Revisión logs RSA. Sin alerta por modificaciones fuera de horario. Sin segregación who-records vs. who-signs.',s:'warn'},
+    {t:'Estado controles AAS (PT-08)',d:'Accesos MRO básicos. Sin PAM. Sin revisión trimestral documentada. IS.I.OR.235 pendiente. PENDIENTE: PAM + cláusulas contractuales ≤ 45 días.',s:'warn'},
+  ]},
+  'T-14':{title:'VIP Data Breach — Leon AAS (T-14)',steps:[
+    {t:'Reconocimiento datos VIP Leon',d:'Leon AAS: itinerarios D-IRSB/D-IHVQ, identidades VIP, destinos, horarios exactos. Sin DLP activo. ¿Cuántos usuarios acceden a datos de pasajeros VIP?',s:'info'},
+    {t:'Exfiltración por usuario autorizado',d:'Empleado con acceso Leon exporta datos VIP. Sin alertas DLP: extracción masiva no detectada. Sin registro de accesos a datos sensibles.',s:'warn'},
+    {t:'Canal de exfiltración',d:'Export CSV datos pasajeros. Email a cuenta personal (sin DLP email — M365 no desplegado). O extracción vía API Leon sin logging configurado.',s:'danger'},
+    {t:'Impacto GDPR / seguridad VIP',d:'Exposición itinerarios VIP: riesgo seguridad física pasajeros. Infracción GDPR grave (AEPD). DPA con Leon: PENDIENTE firma. Daño reputacional bizav.',s:'danger'},
+    {t:'Obligaciones de notificación',d:'IS.I.OR.230: notificación incidente IS a AESA obligatoria. GDPR Art.33: notificación AEPD ≤ 72h. ¿Tiene AAS procedimiento documentado?',s:'warn'},
+    {t:'Estado controles AAS (PT-14)',d:'Acceso por credenciales Leon. Sin DLP. Política GDPR básica. DPA con Leon: PENDIENTE firma. PENDIENTE: roles + DLP + DPA ≤ 90 días.',s:'warn'},
+  ]},
+};
+
+const simOutputs={
+  'Reconocimiento OSINT — AAS / ProAir':`[INFO] Objetivo: atlanticairsolutions.com + ProAir Aviation GmbH
+[INFO] LinkedIn: RSI (jesus.cb@atlanticairsolutions.com), Chief Pilot, CAMO Manager identificados
+[INFO] Flightradar24: D-IRSB (Mode S 3E2BF6), D-IHVQ — ProAir como operador registrado
+[INFO] AESA: AOC activo. Flota D-IRSB + D-IHVQ. CAMO AAS A Coruña.
+[WARN] Email format inferido: nombre.apellido@atlanticairsolutions.com
+[WARN] Web AAS: estructura organizativa parcialmente visible
+[WARN] Leon Software: acceso app móvil universal — superficie de exposición elevada
+[DONE] OSINT completado. Vectores: Leon app + PPS CrewBriefing + emails corporativos`,
+  'Escaneo red OCC A Coruña':`[INFO] Objetivo: red corporativa AAS — OCC A Coruña (LECO)
+[INFO] Nmap -sV sobre rango corporativo AAS
+[INFO] Puerto 443/tcp — HTTPS — acceso SaaS (PPS, Leon, Jeppesen)
+[WARN] Sin segmentación VLAN confirmada: OCC y red general en mismo segmento
+[WARN] WiFi EFBs: SSID detectado. Verificando aislamiento vs. red corporativa...
+[DANGER] WiFi EFBs sin VLAN separada confirmada — bridge potencial a red operacional
+[INFO] Firewall perimetral: activo. Logs: estado desconocido.
+[DONE] Vector crítico: sin VLAN OCC. Acción urgente: PT-02 segmentación red.`,
+  'Password spray — Leon / PPS':`[INFO] Iniciando password spray sobre Leon Software (autenticación AAS)
+[INFO] Usuarios objetivo: tripulación CJ1 + despachadores OCC (obtenidos OSINT)
+[INFO] Lista: Top50 passwords corporativas + Atlantic + mes/año
+[WARN] Intento 1: piloto@aas : Atlantic2024! — fallido
+[WARN] Intento 2: occ@aas : AAS2025 — fallido
+[DANGER] Sin bloqueo de cuenta detectado tras 5 intentos — política no confirmada
+[WARN] MFA Leon: NO ACTIVO universal (limitación RSI documentada RA v3)
+[DANGER] Vector viable confirmado: sin MFA + sin bloqueo = spray factible
+[DONE] Acción urgente: PT-04 MFA Leon + política de bloqueo.`,
+  'Explotación EFB sin MDM':`[INFO] Objetivo: iPads EFB D-IRSB y D-IHVQ
+[INFO] MDM AAS: NO DESPLEGADO (confirmado Risk Assessment v3 — HW-01a/b)
+[WARN] Sin MDM: App Store libre activa en dispositivos EFB operacionales
+[WARN] Sin inventario físico: Nº serie iPads no registrado en AAS
+[DANGER] Acceso físico EFB en tierra (LECO): sin PIN forzado por MDM
+[DANGER] Sin remote wipe: dispositivo perdido = acceso OFPs + cartas Jeppesen + CrewBriefing
+[WARN] AIRAC: verificación manual, no forzada. Ciclo caducado posible sin alerta OCC.
+[DANGER] App maliciosa instalable en EFB operacional CJ1 sin restricción
+[DONE] 3 vectores críticos. Acción: PT-06 Apple BM + Intune/Jamf <= 45 días.`,
+  'Simular GPS Spoofing — zona báltica':`[INFO] EASA SIB activo: GNSS spoofing/jamming Europa — zona báltica + ME
+[INFO] D-IRSB (C/N 525-0476) ruta simulada: LECO -> Europa central via zona riesgo
+[WARN] RAIM check pre-vuelo: proc. NO formalizado en OM-B AAS (pendiente PT-11)
+[DANGER] Emisor SDR spoofing: señal GPS falsa inyectada +8 nm al este de ruta real
+[DANGER] FMS CJ1 acepta posición sin alerta: RAIM no detecta spoofing diferencial
+[DANGER] Sin cross-check IRS/DME-DME formalizado: posición GPS falsa aceptada
+[WARN] ATC no detecta: ADS-B emite posición GPS falsa (derived from GPS)
+[DANGER] D-IRSB desviada hacia espacio aéreo restringido sin awareness tripulación
+[DONE] Amenaza INTOLERABLE confirmada. PT-11 proc. OM-B obligatorio <= 30 días.`,
+  'Test acceso AWM — usuario MRO':`[INFO] Objetivo: AWM/CAME system AAS — acceso MRO externo
+[INFO] MRO Part-145 con acceso a registros D-IRSB (C/N 525-0476)
+[WARN] Sin PAM activo: sesión MRO no supervisada ni registrada formalmente
+[WARN] Revisión accesos MRO: sin proceso trimestral documentado (Risk Assessment v3)
+[DANGER] Credenciales MRO reutilizadas (breach externo): acceso AWM sin MFA
+[DANGER] Task card D-IRSB modificada: AD EASA marcado como aplicado sin ejecución
+[DANGER] CRS firmado con defecto: D-IRSB puesta en servicio — CAMO.A.310 violation
+[WARN] Audit trail AWM: estado desconocido (AWM sin confirmar — SW-04)
+[DONE] Vulnerabilidad CAMO crítica. Acción: PT-07 + PT-08 + PT-09 urgente.`,
+  'Exfiltración datos pasajeros VIP Leon':`[INFO] Objetivo: datos pasajeros VIP en Leon Software AAS
+[INFO] Leon contiene: itinerarios D-IRSB/D-IHVQ, identidades VIP, destinos, horarios
+[WARN] DLP Leon: NO CONFIGURADO — sin alertas extracción masiva (Risk Assessment v3)
+[WARN] Registro accesos VIP: NO ACTIVO en configuración AAS actual
+[DANGER] Export CSV pasajeros 90 dias: registros VIP extraidos sin alerta generada
+[DANGER] Email cuenta personal (sin M365 DLP — no contratado): exfiltracion completada
+[DANGER] DPA GDPR con Leon: PENDIENTE firma formal — incumplimiento GDPR Art.28
+[WARN] Notificacion AEPD Art.33: obligatoria <=72h — proc. AAS no documentado
+[WARN] Notificacion AESA IS.I.OR.230: obligatoria — proc. MSG pendiente
+[DONE] Exfiltracion sin deteccion. Accion: PT-14 DLP + roles + DPA <= 90 dias.`,
+};
+
+const checklist={sections:[
+  {title:'Pre-engagement PART-IS',items:['Alcance definido: flota D-IRSB y D-IHVQ CJ1','Autorización escrita RSI + Accountable Manager','Sin impacto en aeronaves en operación activa','Notificación a AESA si alcance regulatorio IS.I.OR.230','Contacto emergencia: RSI + Chief Pilot + OCC']},
+  {title:'Reconocimiento',items:['OSINT AAS/ProAir completado (LECO + Flightradar24)','Inventario activos IS.I.OR.205(a) revisado (RA v3)','Usuarios Leon/PPS identificados','Rutas D-IRSB/D-IHVQ mapeadas','NOTAMs GNSS activos consultados']},
+  {title:'Análisis amenazas IS.I.OR.205',items:['Amenazas T-01 a T-15 del RA v3 revisadas','INTOLERABLES T-01 y T-11 priorizadas','Activos criticidad A–B evaluados','Plan tratamiento PT-01 a PT-15 consultado','Controles existentes verificados vs. RA v3']},
+  {title:'Explotación controlada',items:['Entorno aislado — sin afectar operaciones CJ1','MDM ausente: EFBs verificados físicamente (no en vuelo)','Credenciales de prueba (no de producción)','GPS spoofing: simulación teórica, no en aeronave real','AWM: acceso solo a entorno staging confirmado']},
+  {title:'Post-explotación y evidencias',items:['Evidencias capturadas (screenshots + logs)','Sin persistencia real en sistemas AAS','Credenciales y accesos de prueba revocados','Hallazgos vinculados a amenazas T-xx del RA','Severidad OACI asignada a cada hallazgo']},
+  {title:'Reporting PART-IS / IS.I.OR.230',items:['Hallazgos con índice OACI (Sev × Prob)','Vinculados a acciones PT-xx del plan tratamiento','Evaluación obligación notificación AESA IS.I.OR.230','Plan remediación alineado con PT-xx y plazos','Presentación a RSI + Accountable Manager + AESA']},
+]};
+
+let currentAssetFilter='all';
+let currentPTFilter='all';
+
+function renderThreats(filter){
+  const list=document.getElementById('threats-list');
+  const data=filter==='all'?threats:threats.filter(t=>t.region===filter);
+  list.innerHTML=data.map(t=>`
+    <div class="threat-row">
+      <div class="threat-header">
+        <span class="threat-id">${t.id}</span>
+        <span class="threat-title">${t.title}</span>
+        <span class="badge ${t.region==='INTOLERABLE'?'badge-intol':t.region==='TOLERABLE'?'badge-tol':'badge-acep'}">${t.region}</span>
+        <span class="badge badge-${t.sev}">${t.sev}</span>
+      </div>
+      <div class="threat-detail">${t.activos} &nbsp;·&nbsp; ${t.tipo} &nbsp;·&nbsp; Inherente: ${t.inh} → Residual: ${t.res} &nbsp;·&nbsp; Ref: ${t.ref} &nbsp;·&nbsp; ${t.plazo}</div>
+    </div>
+  `).join('');
+}
+
+function filterThreats(f,el){
+  document.querySelectorAll('#amenazas .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderThreats(f);
+}
+
+function renderAssets(){
+  const list=document.getElementById('assets-list');
+  const data=currentAssetFilter==='all'?assets:assets.filter(a=>{
+    if(currentAssetFilter==='Aeronave')return a.tipo==='Aeronave';
+    return a.tipo===currentAssetFilter;
+  });
+  list.innerHTML=data.map(a=>`
+    <div class="asset-row">
+      <span class="asset-id">${a.id}</span>
+      <div class="asset-name">
+        <div class="asset-nombre">${a.nombre}</div>
+        <div class="asset-nota ${a.warn?'warn-note':''}">${a.nota}</div>
+      </div>
+      <span style="font-size:11px;color:var(--text2);min-width:90px;text-align:right">${a.cat}</span>
+      <span class="badge ${a.sev==='A'?'badge-intol':a.sev==='B'?'badge-alta':a.sev==='C'?'badge-med':'badge-acep'}" style="margin-left:6px">Sev ${a.sev}</span>
+    </div>
+  `).join('');
+}
+
+function filterAssets(f,el){
+  currentAssetFilter=f;
+  document.querySelectorAll('#activos .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderAssets();
+}
+
+function renderPT(filter){
+  const list=document.getElementById('pt-list');
+  const data=filter==='all'?ptData:ptData.filter(p=>p.prio===filter);
+  list.innerHTML=data.map(p=>`
+    <div class="pt-row">
+      <span class="pt-ref">${p.ref}</span>
+      <div class="pt-body">
+        <div class="pt-amenaza">${p.amenaza}</div>
+        <div class="pt-accion">${p.accion}</div>
+        <div class="pt-meta">Resp: ${p.resp} &nbsp;·&nbsp; ${p.marco} &nbsp;·&nbsp; ${p.plazo}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;flex-shrink:0">
+        <span class="badge ${p.prio==='URGENTE'?'badge-urg':p.prio==='ALTA'?'badge-alta':p.prio==='MEDIA'?'badge-med':'badge-baja'}">${p.prio}</span>
+        <span class="badge badge-pend">PENDIENTE</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterPT(f,el){
+  currentPTFilter=f;
+  document.querySelectorAll('#tratamiento .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderPT(f);
+}
+
+function renderVectors(){
+  document.getElementById('vector-grid').innerHTML=vectors.map((v,i)=>`
+    <div class="vcard" onclick="selectVector(${i},'${v.th}')">
+      <div class="vcard-icon">${v.icon}</div>
+      <div class="vcard-name">${v.nombre}</div>
+      <div class="vcard-desc">${v.desc}</div>
+    </div>
+  `).join('');
+}
+
+function selectVector(i,th){
+  document.querySelectorAll('.vcard').forEach((c,idx)=>c.classList.toggle('sel',idx===i));
+  document.getElementById('pentest-content').style.display='block';
+  renderScenario(th);
+  renderChecklist();
+}
+
+function renderScenario(th){
+  const s=scenarios[th]||scenarios['T-11'];
+  document.getElementById('scenario-box').innerHTML=`
+    <div class="card-title">${s.title}</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:4px">Atlantic Air Solutions · PART-IS IS.I.OR.205 · Entorno simulado — sin impacto en operaciones reales</div>
+    <ul class="step-list">
+      ${s.steps.map((st,idx)=>`
+        <li class="step-item">
+          <div class="step-num">${idx+1}</div>
+          <div class="step-body">
+            <div class="step-title">${st.t}</div>
+            <div class="step-desc">${st.d}</div>
+          </div>
+          <span class="badge ${st.s==='ok'?'badge-acep':st.s==='warn'?'badge-alta':st.s==='danger'?'badge-urg':'badge-med'}" style="flex-shrink:0">${st.s==='ok'?'Control':st.s==='warn'?'Moderado':st.s==='danger'?'Crítico':'Info'}</span>
+        </li>
+      `).join('')}
+    </ul>
+  `;
+}
+
+function renderChecklist(){
+  document.getElementById('chk-content').innerHTML=checklist.sections.map(sec=>`
+    <div class="chk-section">
+      <div class="chk-title">${sec.title}</div>
+      ${sec.items.map((item,j)=>`
+        <label class="chk-item" id="chk-${sec.title.replace(/\s+/g,'')}-${j}">
+          <input type="checkbox" onchange="toggleChk('chk-${sec.title.replace(/\s+/g,'')}-${j}',this)">
+          <span>${item}</span>
+        </label>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function toggleChk(id,cb){
+  document.getElementById(id).classList.toggle('checked',cb.checked);
+}
+
+function runSim(){
+  const sel=document.getElementById('sim-sel').value;
+  const out=document.getElementById('sim-out');
+  out.innerHTML='<span style="color:var(--text3)">Ejecutando simulación AAS...</span>';
+  setTimeout(()=>{
+    const lines=(simOutputs[sel]||'Sin datos para este escenario').split('\n');
+    out.innerHTML=lines.map(l=>{
+      if(l.startsWith('[DANGER]'))return`<span class="s-danger">${l}</span>`;
+      if(l.startsWith('[WARN]'))return`<span class="s-warn">${l}</span>`;
+      if(l.startsWith('[OK]')||l.startsWith('[DONE]'))return`<span class="s-ok">${l}</span>`;
+      return`<span class="s-info">${l}</span>`;
+    }).join('\n');
+  },600);
+}
+
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const ids=['dashboard','amenazas','activos','tratamiento','pentest'];
+  document.querySelectorAll('.nav-btn').forEach((b,i)=>b.classList.toggle('active',ids[i]===id));
+}
+
+function showPT(id,el){
+  document.querySelectorAll('#pentest-tabs .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['esc-tab','libre-tab','chk-tab'].forEach(t=>document.getElementById(t).style.display='none');
+  document.getElementById(id+'-tab').style.display='block';
+}
+
+// CHART
+function renderChart(){
+  const ctx=document.getElementById('dashChart');
+  if(!ctx||!window.Chart)return;
+  new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:['T-01\nNavDB','T-02\nRansomware','T-03\nW&B','T-04\nPhishing','T-05\nM365','T-06\nEFB','T-07\nAWM','T-08\nMRO','T-09\nSBs','T-10\nOEM','T-11\nGPS Spoof','T-12\nJamming','T-13\nADS-B','T-14\nVIP Data','T-15\nProAir'],
+      datasets:[
+        {label:'Riesgo inherente',data:[3,4,2,4,4,3,2,3,2,2,3,4,2,5,2],backgroundColor:'rgba(163,45,45,0.3)',borderColor:'#A32D2D',borderWidth:1},
+        {label:'Riesgo residual',data:[2,3,2,3,3,2,2,2,2,2,2,3,2,4,2],backgroundColor:'rgba(133,79,11,0.3)',borderColor:'#854F0B',borderWidth:1},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{min:0,max:6,ticks:{stepSize:1,font:{size:10},callback:v=>['','1','2','3','4','5',''][v]||v},grid:{color:'rgba(0,0,0,0.05)'}},
+        x:{ticks:{font:{size:9},maxRotation:0,autoSkip:false},grid:{display:false}}
+      }
+    }
+  });
+}
+
+renderThreats('all');
+renderAssets();
+renderPT('all');
+renderVectors();
+setTimeout(renderChart,100);
+</script>
+</body>
+</html>
